@@ -1,5 +1,13 @@
-# leaflet-external-geojson
-simple leaflet map with remote GeoJSON feed from USGS earthquakes
+# leaflet-data-apis
+Leaflet map with multiple API data feeds from USGS, Socrata, Esri ArcGIS Online
 
 ## Demo
-https://jackdougherty.github.io/leaflet-external-geojson/index.html
+https://jackdougherty.github.io/leaflet-data-apis/index.html
+
+## Learn more at
+
+- *Data Visualization for All* book, tutorials in-progress on Leaflet code templates http://DataVizForAll.org
+- http://github.com/jackdougherty/leaflet-socrata
+- http://github.com/jackdougherty/leaflet-esri
+- http://esri.github.io/esri-leaflet
+- Tim Stallmann, Mapping external GeoJSON data, http://savaslabs.com/2015/05/18/mapping-geojson.html
