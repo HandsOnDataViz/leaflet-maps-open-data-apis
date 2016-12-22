@@ -58,8 +58,9 @@
 
   // load open data from Socrata endpoint in GeoJSON format
   // with simple marker styling: blue circles
+  // register your own Socrata app token at https://dev.socrata.com/register
   // Connecticut School Directory, CT Open Data, https://data.ct.gov/resource/v4tt-nt9n
-  $.getJSON("https://data.ct.gov/resource/v4tt-nt9n.geojson", function (data){
+  $.getJSON("https://data.ct.gov/resource/v4tt-nt9n.geojson?&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function (data){
     var geoJsonLayer = L.geoJson(data, {
       pointToLayer: function( feature, latlng) {
         var circle = L.circleMarker(latlng, {
@@ -79,9 +80,10 @@
 
   // load open data from Socrata endpoint in GeoJSON format, with simple filter https://dev.socrata.com/docs/filtering.html
   // with simple marker styling: orange circles
+  // register your own Socrata app token at https://dev.socrata.com/register
   // Agricultural commodities grown by farmer, limited to fruit:peaches
   // Connecticut Open Data https://data.ct.gov/resource/y6p2-px98
-  $.getJSON("https://data.ct.gov/resource/y6p2-px98.geojson?category=Fruit&item=Peaches", function (data){
+  $.getJSON("https://data.ct.gov/resource/y6p2-px98.geojson?category=Fruit&item=Peaches&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function (data){
     var geoJsonLayer = L.geoJson(data, {
       pointToLayer: function( feature, latlng) {
         var circle = L.circleMarker(latlng, {
