@@ -74,7 +74,7 @@
         circle.bindPopup(feature.properties.name + '<br>' + feature.properties.district_name); // replace last term with property data labels to display from GeoJSON file
         return circle;
       }
-    }).addTo(map); // add layer on startup
+    });
     controlLayers.addOverlay(geoJsonLayer, 'Public Schools (CT Open Data-Socrata)');
   });
 
@@ -97,7 +97,7 @@
         circle.bindPopup(feature.properties.business + '<br>' + feature.properties.item); // replace last term with property data labels to display from GeoJSON file
         return circle;
       }
-    }).addTo(map); // add layer on startup
+    });
     controlLayers.addOverlay(geoJsonLayer, 'Peaches (CT Open Data-Socrata)');
   });
 
@@ -113,6 +113,7 @@
       controlLayers.addOverlay(dataLayer, 'Earthquakes-zoom out (USGS)');
     }
     $.getJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) { addDataToMap(data, map); });
+
 
     //ArcGIS Online data from City of Hartford http://gisdata.hartford.gov/
     var schools = L.esri.featureLayer({
@@ -132,7 +133,7 @@
           return { color: "blue", weight: 3 };
         }
       }
-    }).addTo(map);
+    }).addTo(map); // display by default
     controlLayers.addOverlay(bikeRoutes, 'Bike Routes (Hartford Open Data-ArcGIS Online)');
 
     var towns = L.esri.featureLayer({
