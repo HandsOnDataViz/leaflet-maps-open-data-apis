@@ -45,14 +45,14 @@
   }).addTo(map); // adds layer by default
   controlLayers.addBaseLayer(lightAll, 'Gray basemap (Carto)');
 
-  // var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  //   attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-  // });
-  // controlLayers.addBaseLayer(Esri_WorldImagery, 'Satellite basemap (Esri)');
-  //
-  // // Esri streets basemapLayer (dependency: Esri leaflet plugin)
-  // var Esri_Streets =   L.esri.basemapLayer('Streets');
-  // controlLayers.addBaseLayer(Esri_Streets, 'Street basemap (Esri)');
+  var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  });
+  controlLayers.addBaseLayer(Esri_WorldImagery, 'Satellite basemap (Esri)');
+
+  // Esri streets basemapLayer (dependency: Esri leaflet plugin)
+  var Esri_Streets =   L.esri.basemapLayer('Streets');
+  controlLayers.addBaseLayer(Esri_Streets, 'Street basemap (Esri)');
 
   /* OVERLAYS */
 
@@ -83,45 +83,45 @@
   // register your own Socrata app token at https://dev.socrata.com/register
   // Agricultural commodities grown by farmer, limited to fruit:peaches
   // Connecticut Open Data https://data.ct.gov/resource/y6p2-px98
-  // $.getJSON("https://data.ct.gov/resource/y6p2-px98.geojson?category=Fruit&item=Peaches&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function (data){
-  //   var geoJsonLayer = L.geoJson(data, {
-  //     pointToLayer: function( feature, latlng) {
-  //       var circle = L.circleMarker(latlng, {
-  //         radius: 6,
-  //         fillColor: "orange",
-  //         color: "orange",
-  //         weight: 2,
-  //         opacity: 1,
-  //         fillOpacity: 0.7
-  //       });
-  //       circle.bindPopup(feature.properties.business + '<br>' + feature.properties.item); // replace last term with property data labels to display from GeoJSON file
-  //       return circle;
-  //     }
-  //   }).addTo(map); // add layer on startup
-  //   controlLayers.addOverlay(geoJsonLayer, 'Peaches (CT Open Data-Socrata)');
-  // });
+  $.getJSON("https://data.ct.gov/resource/y6p2-px98.geojson?category=Fruit&item=Peaches&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function (data){
+    var geoJsonLayer = L.geoJson(data, {
+      pointToLayer: function( feature, latlng) {
+        var circle = L.circleMarker(latlng, {
+          radius: 6,
+          fillColor: "orange",
+          color: "orange",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.7
+        });
+        circle.bindPopup(feature.properties.business + '<br>' + feature.properties.item); // replace last term with property data labels to display from GeoJSON file
+        return circle;
+      }
+    }).addTo(map); // add layer on startup
+    controlLayers.addOverlay(geoJsonLayer, 'Peaches (CT Open Data-Socrata)');
+  });
 
   // TODO: compare this onEachFeature method with the pointToLayer methods above
-  // function addDataToMap(data, map) {
-  //   var dataLayer = L.geoJson(data, {
-  //     onEachFeature: function(feature, layer) {
-  //       var popupText = "Magnitude: " + feature.properties.mag
-  //       + "<br>Location: " + feature.properties.place
-  //       + "<br><a href='" + feature.properties.url + "'>More info</a>";
-  //       layer.bindPopup(popupText); }
-  //     });
-  //     controlLayers.addOverlay(dataLayer, 'Earthquakes-zoom out (USGS)');
-  //   }
-  //   $.getJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) { addDataToMap(data, map); });
+  function addDataToMap(data, map) {
+    var dataLayer = L.geoJson(data, {
+      onEachFeature: function(feature, layer) {
+        var popupText = "Magnitude: " + feature.properties.mag
+        + "<br>Location: " + feature.properties.place
+        + "<br><a href='" + feature.properties.url + "'>More info</a>";
+        layer.bindPopup(popupText); }
+      });
+      controlLayers.addOverlay(dataLayer, 'Earthquakes-zoom out (USGS)');
+    }
+    $.getJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) { addDataToMap(data, map); });
 
     //ArcGIS Online data from City of Hartford http://gisdata.hartford.gov/
-    // var schools = L.esri.featureLayer({
-    //   url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Education_Youth_Family/MapServer/4/'
-    // });
-    // schools.bindPopup(function (evt) {
-    //   return L.Util.template('<p>{SCHOOL_NAME1}<br>{ADDRESS}</p>', evt.feature.properties);
-    // });
-    // controlLayers.addOverlay(schools, 'HPS Schools 2016-17 (Hartford Open Data-ArcGIS Online)');
+    var schools = L.esri.featureLayer({
+      url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Education_Youth_Family/MapServer/4/'
+    });
+    schools.bindPopup(function (evt) {
+      return L.Util.template('<p>{SCHOOL_NAME1}<br>{ADDRESS}</p>', evt.feature.properties);
+    });
+    controlLayers.addOverlay(schools, 'HPS Schools 2016-17 (Hartford Open Data-ArcGIS Online)');
 
     var bikeRoutes = L.esri.featureLayer({
       url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Community/MapServer/9',
@@ -135,24 +135,24 @@
     }).addTo(map);
     controlLayers.addOverlay(bikeRoutes, 'Bike Routes (Hartford Open Data-ArcGIS Online)');
 
-    // var towns = L.esri.featureLayer({
-    //   url: 'https://services1.arcgis.com/5rblLCKLgS4Td60j/arcgis/rest/services/CTtowns/FeatureServer/0'
-    // }).addTo(map); // add layer on startup
-    // controlLayers.addOverlay(towns, 'CT Towns (Trinity College-ArcGIS Online)');
+    var towns = L.esri.featureLayer({
+      url: 'https://services1.arcgis.com/5rblLCKLgS4Td60j/arcgis/rest/services/CTtowns/FeatureServer/0'
+    }).addTo(map); // add layer on startup
+    controlLayers.addOverlay(towns, 'CT Towns (Trinity College-ArcGIS Online)');
 
-    // var zoning = L.esri.featureLayer({
-    //   url: 'https://services.arcgis.com/2ycVue24EK6qzjat/arcgis/rest/services/Downtown_Zoning/FeatureServer/0',
-    //   style: function (feature) {
-    //     if(feature.properties.LABEL === 'B-2'){
-    //       return {color: 'blue', weight: 2 };
-    //     } else if(feature.properties.LABEL === 'B-1'){
-    //       return { color: 'red', weight: 2 };
-    //     } else {
-    //       return { color: 'green', weight: 2 };
-    //     }
-    //   }
-    // });
-    // controlLayers.addOverlay(zoning, 'Downtown zoning (individual public data-ArcGIS Online)');
+    var zoning = L.esri.featureLayer({
+      url: 'https://services.arcgis.com/2ycVue24EK6qzjat/arcgis/rest/services/Downtown_Zoning/FeatureServer/0',
+      style: function (feature) {
+        if(feature.properties.LABEL === 'B-2'){
+          return {color: 'blue', weight: 2 };
+        } else if(feature.properties.LABEL === 'B-1'){
+          return { color: 'red', weight: 2 };
+        } else {
+          return { color: 'green', weight: 2 };
+        }
+      }
+    });
+    controlLayers.addOverlay(zoning, 'Downtown zoning (individual public data-ArcGIS Online)');
 
     </script>
   </body>
