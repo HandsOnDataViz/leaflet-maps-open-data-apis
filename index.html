@@ -30,7 +30,7 @@
 
   <script>
   // set the map center and zoom level
-  var map = L.map('map').setView([41.76, -72.69], 13);
+  var map = L.map('map').setView([41.76, -72.69], 12);
 
   // add legend control layers - global variable with (null, null) allows indiv basemaps and overlays to be added inside functions below
   var controlLayers = L.control.layers( null, null, {
@@ -74,7 +74,7 @@
         circle.bindPopup(feature.properties.name + '<br>' + feature.properties.district_name); // replace last term with property data labels to display from GeoJSON file
         return circle;
       }
-    });
+    }).addTo(map); // display by default
     controlLayers.addOverlay(geoJsonLayer, 'Public Schools (CT Open Data-Socrata)');
   });
 
