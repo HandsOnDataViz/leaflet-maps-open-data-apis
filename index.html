@@ -1,160 +1,183 @@
+<!DOCTYPE html>
 <html>
-<head>
-  <meta charset=utf-8 />
-  <title>Leaflet data APIs</title>
-  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-  <!-- Load Leaflet, use newest version at http://leafletjs.com -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js"></script>
+  <head>
+    <meta charset="utf-8" />
+    <title>Leaflet data APIs</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-  <!-- load jQuery, use newest version at https://code.jquery.com   -->
-  <script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
+    <!-- Load Leaflet, use newest version at http://leafletjs.com -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js"></script>
 
-  <!-- Load Esri Leaflet, use newest version at http://esri.github.io/esri-leaflet -->
-  <script src="https://unpkg.com/esri-leaflet@2.0.8"></script>
+    <!-- load jQuery, use newest version at https://code.jquery.com   -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
-  <!-- style the map -->
-  <style>
-  body { margin:0; padding:0; }
-  #map { position: absolute; top:0; bottom:0; right:0; left:0; }
-  </style>
-</head>
+    <!-- Load Esri Leaflet, use newest version at http://esri.github.io/esri-leaflet -->
+    <script src="https://unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
+
+    <!-- style the map -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position: absolute;
+        height: 100vh;
+        width: 100vw;
+        top: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+
 <body>
 
-  <!-- insert the map -->
+  <!-- Create div element to house the map -->
   <div id="map"></div>
 
   <script>
-  // set the map center and zoom level
-  var map = L.map('map').setView([41.76, -72.69], 12);
-
-  // add legend control layers - global variable with (null, null) allows indiv basemaps and overlays to be added inside functions below
-  var controlLayers = L.control.layers( null, null, {
-    position: "topright",
-    collapsed: false // false = open by default
-  }).addTo(map);
-
-  /* BASELAYERS */
-
-  var lightAll = new L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
-  }).addTo(map); // adds layer by default
-  controlLayers.addBaseLayer(lightAll, 'Gray basemap (Carto)');
-
-  var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-  });
-  controlLayers.addBaseLayer(Esri_WorldImagery, 'Satellite basemap (Esri)');
-
-  // Esri streets basemapLayer (dependency: Esri leaflet plugin)
-  var Esri_Streets =   L.esri.basemapLayer('Streets');
-  controlLayers.addBaseLayer(Esri_Streets, 'Street basemap (Esri)');
-
-  /* OVERLAYS */
-
-  // load open data from Socrata endpoint in GeoJSON format
-  // with simple marker styling: blue circles
-  // register your own Socrata app token at https://dev.socrata.com/register
-  // Connecticut School Directory, CT Open Data, https://data.ct.gov/resource/v4tt-nt9n
-  $.getJSON("https://data.ct.gov/resource/v4tt-nt9n.geojson?&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function (data){
-    var geoJsonLayer = L.geoJson(data, {
-      pointToLayer: function( feature, latlng) {
-        var circle = L.circleMarker(latlng, {
-          radius: 6,
-          fillColor: "blue",
-          color: "blue",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.7
-        });
-        circle.bindPopup(feature.properties.name + '<br>' + feature.properties.district_name); // replace last term with property data labels to display from GeoJSON file
-        return circle;
-      }
-    }).addTo(map); // display by default
-    controlLayers.addOverlay(geoJsonLayer, 'Public Schools (CT Open Data-Socrata)');
-  });
-
-  // load open data from Socrata endpoint in GeoJSON format, with simple filter https://dev.socrata.com/docs/filtering.html
-  // with simple marker styling: orange circles
-  // register your own Socrata app token at https://dev.socrata.com/register
-  // Agricultural commodities grown by farmer, limited to fruit:peaches
-  // Connecticut Open Data https://data.ct.gov/resource/y6p2-px98
-  $.getJSON("https://data.ct.gov/resource/y6p2-px98.geojson?category=Fruit&item=Peaches&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function (data){
-    var geoJsonLayer = L.geoJson(data, {
-      pointToLayer: function( feature, latlng) {
-        var circle = L.circleMarker(latlng, {
-          radius: 6,
-          fillColor: "orange",
-          color: "orange",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.7
-        });
-        circle.bindPopup(feature.properties.business + '<br>' + feature.properties.item); // replace last term with property data labels to display from GeoJSON file
-        return circle;
-      }
+    // Initialize the map with specified center coordinates and zoom level
+    var map = L.map('map', {
+      center: [41.76, -72.69],
+      zoom: 12,
     });
-    controlLayers.addOverlay(geoJsonLayer, 'Peaches (CT Open Data-Socrata)');
-  });
 
-  // TODO: compare this onEachFeature method with the pointToLayer methods above
-  function addDataToMap(data, map) {
-    var dataLayer = L.geoJson(data, {
-      onEachFeature: function(feature, layer) {
-        var popupText = "Magnitude: " + feature.properties.mag
-        + "<br>Location: " + feature.properties.place
-        + "<br><a href='" + feature.properties.url + "'>More info</a>";
-        layer.bindPopup(popupText); }
+    // Add legend control layers
+    // global variable with (null, null) allows indiv basemaps and overlays to be added inside functions below
+    var controlLayers = L.control.layers( null, null, {
+      position: "topright",
+      collapsed: false // false = open by default
+    }).addTo(map);
+
+    /* BASELAYERS */
+
+    var lightAll = new L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+    }).addTo(map); // adds layer by default
+    controlLayers.addBaseLayer(lightAll, 'Gray basemap (Carto)');
+
+    var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    });
+    controlLayers.addBaseLayer(Esri_WorldImagery, 'Satellite basemap (Esri)');
+
+    // Esri streets basemapLayer (dependency: Esri leaflet plugin)
+    var Esri_Streets =   L.esri.basemapLayer('Streets');
+    controlLayers.addBaseLayer(Esri_Streets, 'Street basemap (Esri)');
+
+    /* OVERLAYS */
+
+    // Load open data from Socrata endpoint in GeoJSON format
+    // With simple marker styling: blue circles
+    // Register your own Socrata app token at https://dev.socrata.com/register
+    // Connecticut School Directory, CT Open Data, https://data.ct.gov/resource/v4tt-nt9n
+    $.getJSON("https://data.ct.gov/resource/v4tt-nt9n.geojson?&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function(data) {
+      
+      var geoJsonLayer = L.geoJson(data, {
+        pointToLayer: function( feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 6,
+            fillColor: 'blue',
+            color: 'blue',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+          }).bindPopup(feature.properties.name + '<br>' + feature.properties.district_name); // replace last term with property data labels to display from GeoJSON file
+        }
+      }).addTo(map); // display by default
+
+      controlLayers.addOverlay(geoJsonLayer, 'Public Schools (CT Open Data-Socrata)');
+
+    });
+
+
+    // Load open data from Socrata endpoint in GeoJSON format, with simple filter https://dev.socrata.com/docs/filtering.html
+    // With simple marker styling: orange circles
+    // Register your own Socrata app token at https://dev.socrata.com/register
+    // Agricultural commodities grown by farmer, limited to fruit:peaches
+    // Connecticut Open Data https://data.ct.gov/resource/y6p2-px98
+    $.getJSON("https://data.ct.gov/resource/y6p2-px98.geojson?category=Fruit&item=Peaches&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function(data) {
+
+      var geoJsonLayer = L.geoJson(data, {
+        pointToLayer: function( feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 6,
+            fillColor: 'orange',
+            color: 'orange',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+          }).bindPopup(feature.properties.business + '<br>' + feature.properties.item); // replace last term with property data labels to display from GeoJSON file
+        }
       });
-      controlLayers.addOverlay(dataLayer, 'Earthquakes-zoom out (USGS)');
-    }
-    $.getJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) { addDataToMap(data, map); });
 
+      controlLayers.addOverlay(geoJsonLayer, 'Peaches (CT Open Data-Socrata)');
 
-    //ArcGIS Online data from City of Hartford http://gisdata.hartford.gov/
-    var schools = L.esri.featureLayer({
-      url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Education_Youth_Family/MapServer/4/'
     });
-    schools.bindPopup(function (evt) {
-      return L.Util.template('<p>{SCHOOL_NAME1}<br>{ADDRESS}</p>', evt.feature.properties);
-    });
-    controlLayers.addOverlay(schools, 'HPS Schools 2016-17 (Hartford Open Data-ArcGIS Online)');
 
-    var bikeRoutes = L.esri.featureLayer({
-      url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Community/MapServer/9',
-      style: function (feature) {
-        if (feature.properties.TYPE === 'Bike Lane'){
-          return {color: 'green', weight: 3 };
-        } else {
-          return { color: "blue", weight: 3 };
-        }
+
+    // TODO: compare this onEachFeature method with the pointToLayer methods above
+    function addDataToMap(data, map) {
+      var dataLayer = L.geoJson(data, {
+        onEachFeature: function(feature, layer) {
+          var popupText = "Magnitude: " + feature.properties.mag
+          + "<br>Location: " + feature.properties.place
+          + "<br><a href='" + feature.properties.url + "'>More info</a>";
+          layer.bindPopup(popupText); }
+        });
+        controlLayers.addOverlay(dataLayer, 'Earthquakes-zoom out (USGS)');
       }
-    }).addTo(map); // display by default
-    controlLayers.addOverlay(bikeRoutes, 'Bike Routes (Hartford Open Data-ArcGIS Online)');
+      $.getJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) { addDataToMap(data, map); });
 
-    var towns = L.esri.featureLayer({
-      url: 'https://services1.arcgis.com/5rblLCKLgS4Td60j/arcgis/rest/services/CTtowns/FeatureServer/0'
-    }).addTo(map); // add layer on startup
-    controlLayers.addOverlay(towns, 'CT Towns (Trinity College-ArcGIS Online)');
 
-    var zoning = L.esri.featureLayer({
-      url: 'https://services.arcgis.com/2ycVue24EK6qzjat/arcgis/rest/services/Downtown_Zoning/FeatureServer/0',
-      style: function (feature) {
-        if(feature.properties.LABEL === 'B-2'){
-          return {color: 'blue', weight: 2 };
-        } else if(feature.properties.LABEL === 'B-1'){
-          return { color: 'red', weight: 2 };
-        } else {
-          return { color: 'green', weight: 2 };
+      // ArcGIS Online data from City of Hartford http://gisdata.hartford.gov/
+      // Load Schools
+      var schools = L.esri.featureLayer({
+        url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Education_Youth_Family/MapServer/4/'
+      });
+      schools.bindPopup(function(evt) {
+        return L.Util.template('<p>{SCHOOL_NAME1}<br>{ADDRESS}</p>', evt.feature.properties);
+      });
+      controlLayers.addOverlay(schools, 'HPS Schools 2016-17 (Hartford Open Data-ArcGIS Online)');
+
+      // Load bike routes
+      var bikeRoutes = L.esri.featureLayer({
+        url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Community/MapServer/9',
+        style: function (feature) {
+          if (feature.properties.TYPE === 'Bike Lane') {
+            return {color: 'green', weight: 3 };
+          } else {
+            return { color: 'blue', weight: 3 };
+          }
         }
-      }
-    });
-    controlLayers.addOverlay(zoning, 'Downtown zoning (individual public data-ArcGIS Online)');
+      }).addTo(map); // display by default
+      controlLayers.addOverlay(bikeRoutes, 'Bike Routes (Hartford Open Data-ArcGIS Online)');
+
+      // Load town boundaries
+      var towns = L.esri.featureLayer({
+        url: 'https://services1.arcgis.com/5rblLCKLgS4Td60j/arcgis/rest/services/CTtowns/FeatureServer/0'
+      }).addTo(map); // add layer on startup
+      controlLayers.addOverlay(towns, 'CT Towns (Trinity College-ArcGIS Online)');
+
+      // Load downtown zoning
+      var zoning = L.esri.featureLayer({
+        url: 'https://services.arcgis.com/2ycVue24EK6qzjat/arcgis/rest/services/Downtown_Zoning/FeatureServer/0',
+        style: function (feature) {
+          if (feature.properties.LABEL === 'B-2'){
+            return {color: 'blue', weight: 2 };
+          } else if (feature.properties.LABEL === 'B-1'){
+            return { color: 'red', weight: 2 };
+          } else {
+            return { color: 'green', weight: 2 };
+          }
+        }
+      });
+      controlLayers.addOverlay(zoning, 'Downtown zoning (individual public data-ArcGIS Online)');
 
     </script>
+    
   </body>
-  </html>
+
+</html>
