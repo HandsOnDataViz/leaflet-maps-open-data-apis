@@ -1,5 +1,5 @@
 # leaflet-data-apis
-Leaflet map with multiple API data feeds from USGS, Socrata, Esri ArcGIS Online. View [demo](https://datavizforall.github.io/leaflet-data-apis/index.html).
+Leaflet map with multiple API data feeds from USGS, Socrata, Esri ArcGIS Online. View [demo](https://handsondataviz.github.io/leaflet-data-apis/index.html).
 
 ![Screenshot](images/screenshot.png)
 
@@ -51,7 +51,7 @@ controlLayers.addOverlay(bikeRoutes, 'Bike Routes (Hartford Open Data-ArcGIS Onl
 
 ## Learn more
 
-- [Pull Open Data into Leaflet Map with APIs Tutorial](https://datavizforall.org/leaflet-maps-open-apis.html) in *Data Visualization for All* book (http://DataVizForAll.org)
+- [Pull Open Data into Leaflet Map with APIs Tutorial](https://handsondataviz.org/leaflet-maps-open-apis.html) in *Hands-On Data Visualization* book (http://HandsOnDataViz.org)
 - Leaflet-esri example (http://github.com/jackdougherty/leaflet-esri) by Jack Dougherty
 - Tim Stallmann, Mapping external GeoJSON data, http://savaslabs.com/2015/05/18/mapping-geojson.html
 
