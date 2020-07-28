@@ -7,8 +7,8 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
     <!-- Load Leaflet, use newest version at http://leafletjs.com -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
 
     <!-- load jQuery, use newest version at https://code.jquery.com   -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -113,7 +113,7 @@
         }
       });
 
-      controlLayers.addOverlay(geoJsonLayer, 'Peaches (CT Open Data-Socrata)');
+      controlLayers.addOverlay(geoJsonLayer, 'Peach farms (CT Open Data-Socrata)');
 
     });
 
@@ -127,7 +127,7 @@
           + "<br><a href='" + feature.properties.url + "'>More info</a>";
           layer.bindPopup(popupText); }
         });
-        controlLayers.addOverlay(dataLayer, 'Earthquakes-zoom out (USGS)');
+        controlLayers.addOverlay(dataLayer, 'Earthquakes&mdash;zoom out (USGS)');
       }
       $.getJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) { addDataToMap(data, map); });
 
@@ -144,7 +144,7 @@
 
       // Load bike routes
       var bikeRoutes = L.esri.featureLayer({
-        url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Community/MapServer/9',
+        url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Community/MapServer/4',
         style: function (feature) {
           if (feature.properties.TYPE === 'Bike Lane') {
             return {color: 'green', weight: 3 };
