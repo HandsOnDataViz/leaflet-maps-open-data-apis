@@ -1,59 +1,62 @@
 # leaflet-data-apis
-Leaflet map with multiple API data feeds from USGS, Socrata, Esri ArcGIS Online. View [demo](https://handsondataviz.github.io/leaflet-data-apis/index.html).
+Leaflet map with multiple API data feeds Socrata and Esri ArcGIS Online. View [demo](https://handsondataviz.github.io/leaflet-maps-open-data-apis/index.html).
 
 ![Screenshot](images/screenshot.png)
 
-If you plan to query Socrata heavily, it is recommended you sign up for an API token at https://dev.socrata.com/.
+If you plan to query Socrata heavily, it is recommended you sign up for an API token. See more details at https://dev.socrata.com/.
 
 ### Example of data fetch from Socrata
 
-Assuming you have your `map` initialized and layers control created, load data from a GeoJSON endpoint in Socrata, translate each feature into a layer (circleMarker), bind a popup to the marker,and add it to the map like shown below.
+Assuming you have your `map` initialized and layers control created, load data from a GeoJSON endpoint in Socrata
+and add it to the map as shown below.
 
 ```javascript
-$.getJSON("https://data.ct.gov/resource/v4tt-nt9n.geojson?&$$app_token=QVVY3I72SVPbxBYlTM8fA7eet", function(data) {
-  
-  var geoJsonLayer = L.geoJson(data, {
-    pointToLayer: function(feature, latlng) {
-      return L.circleMarker(latlng, {
-        radius: 6,
-        fillColor: 'blue',
-        color: 'blue',
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.7
-      }).bindPopup(feature.properties.name + '<br>' + feature.properties.district_name);
-    }
-  }).addTo(map);
+$.getJSON('https://data.ct.gov/api/geospatial/evyv-fqzg?method=export&format=GeoJSON', function(data) {
 
-  controlLayers.addOverlay(geoJsonLayer, 'Public Schools (CT Open Data-Socrata)');
+  var towns = L.geoJson(data, {
+    fillOpacity: 0,
+    weight: 0.5,
+    color: 'silver',
+  }).addTo(map)
 
-});
+  // Add town boundaries as a checkbox to the legend
+  legend.addOverlay(towns, 'Town boundaries')
+
+  // Re-center the map view
+  map.fitBounds( towns.getBounds() )
+
+})
 ```
 
 ### Example of data load using esri-leaflet plugin
 
-Esri-leaflet plugin allows you to load the data without using jQuery's `getJSON` function.
+Esri-leaflet plugin allows you to load the data without using jQuery's `getJSON()` function.
 
 ```javascript
-var bikeRoutes = L.esri.featureLayer({
-  url: 'https://gis1.hartford.gov/arcgis/rest/services/OpenData_Community/MapServer/9',
-  style: function(feature) {
-    if (feature.properties.TYPE === 'Bike Lane') {
-      return {color: 'green', weight: 3 };
-    } else {
-      return { color: 'blue', weight: 3 };
-    }
+var ems = L.esri.featureLayer({
+  url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/EMS_Stations/FeatureServer/0',
+  where: "STATE = 'CT'",
+  pointToLayer: function(feature, latlng) {
+    return L.circleMarker(latlng, {
+      radius: 4,
+      fillColor: 'blue',
+      color: 'blue',
+      weight: 0.1,
+      opacity: 1,
+      fillOpacity: 0.5,
+      pane: 'markerPane'
+    }).bindTooltip(feature.properties.NAME)
   }
-}).addTo(map);
+}).addTo(map)
 
-controlLayers.addOverlay(bikeRoutes, 'Bike Routes (Hartford Open Data-ArcGIS Online)');
+legend.addOverlay(ems, 'EMS Stations')
 ```
 
 ## Learn more
 
-- [Pull Open Data into Leaflet Map with APIs Tutorial](https://handsondataviz.org/leaflet-maps-open-apis.html) in *Hands-On Data Visualization* book (http://HandsOnDataViz.org)
-- Leaflet-esri example (http://github.com/jackdougherty/leaflet-esri) by Jack Dougherty
-- Tim Stallmann, Mapping external GeoJSON data, http://savaslabs.com/2015/05/18/mapping-geojson.html
+- [Pull Open Data into Leaflet Map with APIs Tutorial](https://handsondataviz.org/leaflet-maps-open-apis.html) in *Hands-On Data Visualization* book (https://HandsOnDataViz.org)
+- Leaflet-esri example (https://github.com/jackdougherty/leaflet-esri) by Jack Dougherty
+- Tim Stallmann, Mapping external GeoJSON data, https://www.savaslabs.com/blog/mapping-external-geojson-data
 
 ## Credits
 * Leaflet ([see license](https://github.com/Leaflet/Leaflet/blob/master/LICENSE))
