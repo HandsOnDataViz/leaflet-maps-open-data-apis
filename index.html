@@ -39,22 +39,26 @@
 
   <script>
     // Initialize the map with specified center coordinates and zoom level
+    // for target area (North Dakota)
     var map = L.map('map', {
-      center: [41.76, -72.5],
-      zoom: 9,
+      center: [47.55, -100.34],
+      zoom: 7,
     })
 
 
     // Add Carto baselayer
-    var baselayer = new L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+    var baselayer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
     }).addTo(map)
 
+    // Add scale
+    L.control.scale().addTo(map);
+
 
     /*
-      Add a legend (checkboxes) to the upper-right corner
-      At first, baselayers and overlays are set to `null`
-      We will add items to the legend
+      Add a legend (checkboxes) to the upper-right corner.
+      At first, baselayers and overlays are set to `null` (empty legend).
+      We will be adding items to the legend as we load layers.
     */
     var legend = L.control.layers( null, null, {
       position: "topright",
@@ -63,37 +67,45 @@
 
 
     /*
-      Add town boundaries for Connecticut using a GeoJSON export option from Socrata
-      Source: https://data.ct.gov/Government/Town-Boundary-Index-Map/evyv-fqzg
-      Minimum interactive elements, only thin light gray town boundaries
+      Add county boundaries for North Dakota from an Esri server
+      located at https://ndgishub.nd.gov/arcgis/rest/services/All_GovtBoundaries/MapServer
+
+      Since each feature also contains population density, turn boundaries
+      into a choropleth by filling in features with shades of pink using a function
     */
-    $.getJSON('https://data.ct.gov/api/geospatial/evyv-fqzg?method=export&format=GeoJSON', function(data) {
+    var getDensityColor = function(d) {
+      return d > 100  ? '#7a0177' :
+              d > 50  ? '#c51b8a' :
+              d > 20  ? '#f768a1' :
+              d > 5   ? '#fbb4b9' :
+                        '#feebe2'
+    }
 
-      var towns = L.geoJson(data, {
-        fillOpacity: 0,
-        weight: 0.5,
-        color: 'silver',
-      }).addTo(map)
+    var counties = L.esri.featureLayer({
+      url: 'https://ndgishub.nd.gov/arcgis/rest/services/All_GovtBoundaries/MapServer/20',
+      style: function(feature) {
+        return {
+          fillOpacity: 0.5,
+          weight: 0.5,
+          color: 'silver',
+          fillColor: getDensityColor(feature.properties.POP10_SQMI)
+        }
+      }
+    }).addTo(map)
 
-      // Add town boundaries as a checkbox to the legend
-      legend.addOverlay(towns, 'Town boundaries')
-
-      // Re-center the map view
-      map.fitBounds( towns.getBounds() )
-
-    })
+    legend.addOverlay(counties, 'Population density')
 
 
     /*
       Add EMS Stations as small blue points. To each point, attach tooltips with
       the name of the station.
 
-      Data by Homeland Infrastructure Foundation-Level Data (Esri server),
+      Data by Homeland Infrastructure Foundation-Level Data (Esri server), queries for North Dakota (ND),
       available at https://hifld-geoplatform.opendata.arcgis.com/datasets/emergency-medical-service-ems-stations/geoservice
     */
     var ems = L.esri.featureLayer({
       url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/EMS_Stations/FeatureServer/0',
-      where: "STATE = 'CT'",
+      where: "STATE = 'ND'",
       pointToLayer: function(feature, latlng) {
         return L.circleMarker(latlng, {
           radius: 4,
@@ -111,24 +123,17 @@
 
 
     /*
-      From Socrata database of Medicare, add general hospitals in Connecticut
-      using simple filtering on the `state` column.
+      From Medicare's Socrata database, add general hospitals in North Dakota
+      using simple filtering on the `state` column, and a GeoJSON endpoint.
 
-      We rely on the geocoded_column (invisible in the table view of Socrata)
-      to contain latitude and longitude values.
+      Each point is a custom .png icon with a tooltip containing hospital's name,
+      city, and zipcode.
     */
-    $.getJSON("https://data.medicare.gov/resource/xubh-q36u.json?state=CT", function(data) {
-      
-      var hospitals = []
+    $.getJSON("https://data.medicare.gov/resource/xubh-q36u.geojson?state=ND", function(data) {
 
-      for (var i = 0; i < data.length; i++) {
-
-        if (data[i].geocoded_column) {
-          // Read point's coordinates (lon, lat)
-          var lonlat = data[i].geocoded_column.coordinates
-
-          // Create a marker with reversed coordinates order
-          var marker = L.marker( [lonlat[1], lonlat[0] ], {
+      var hospitals = L.geoJson(data, {
+        pointToLayer: function(feature, latlng) {
+          return L.marker(latlng, {
             icon: L.icon({
               iconUrl: 'images/hospital.png',
               iconSize: [24, 24],
@@ -136,22 +141,15 @@
               opacity: 0.5
             })
           }).bindTooltip(
-            data[i].hospital_name
-              + '<br>' + data[i].city
-              + '<br>' + data[i].zip_code
+            feature.properties.hospital_name
+              + '<br>' + feature.properties.city
+              + '<br>' + feature.properties.zip_code
           )
-
-          // Add marker to an array of markers
-          hospitals.push(marker)
         }
-
-      }
-
-      // Create a single layer from all individual markers
-      var hospitalsLayer = L.layerGroup(hospitals).addTo(map)
+      }).addTo(map)
 
       // Add layer to the legend, together with the little icon
-      legend.addOverlay(hospitalsLayer, 'Hospitals <img src="images/hospital.png" height="8" alt="Hospital">')
+      legend.addOverlay(hospitals, 'Hospitals <img src="images/hospital.png" height="8" alt="Hospital">')
 
     })
 

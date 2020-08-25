@@ -8,34 +8,40 @@ If you plan to query Socrata heavily, it is recommended you sign up for an API t
 ### Example of data fetch from Socrata
 
 Assuming you have your `map` initialized and layers control created, load data from a GeoJSON endpoint in Socrata
-and add it to the map as shown below.
+and add it to the map, using custom icons for markers.
 
 ```javascript
-$.getJSON('https://data.ct.gov/api/geospatial/evyv-fqzg?method=export&format=GeoJSON', function(data) {
+$.getJSON("https://data.medicare.gov/resource/xubh-q36u.geojson?state=ND", function(data) {
 
-  var towns = L.geoJson(data, {
-    fillOpacity: 0,
-    weight: 0.5,
-    color: 'silver',
+  var hospitals = L.geoJson(data, {
+    pointToLayer: function(feature, latlng) {
+      return L.marker(latlng, {
+        icon: L.icon({
+          iconUrl: 'images/hospital.png',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+          opacity: 0.5
+        })
+      }).bindTooltip(
+        feature.properties.hospital_name
+          + '<br>' + feature.properties.city
+          + '<br>' + feature.properties.zip_code
+      )
+    }
   }).addTo(map)
-
-  // Add town boundaries as a checkbox to the legend
-  legend.addOverlay(towns, 'Town boundaries')
-
-  // Re-center the map view
-  map.fitBounds( towns.getBounds() )
-
+  
 })
 ```
 
 ### Example of data load using esri-leaflet plugin
 
 Esri-leaflet plugin allows you to load the data without using jQuery's `getJSON()` function.
+You can add point-level data to the map as shown below:
 
 ```javascript
 var ems = L.esri.featureLayer({
   url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/EMS_Stations/FeatureServer/0',
-  where: "STATE = 'CT'",
+  where: "STATE = 'ND'",
   pointToLayer: function(feature, latlng) {
     return L.circleMarker(latlng, {
       radius: 4,
@@ -44,12 +50,10 @@ var ems = L.esri.featureLayer({
       weight: 0.1,
       opacity: 1,
       fillOpacity: 0.5,
-      pane: 'markerPane'
+      pane: 'markerPane'  // to make sure points stay above polygons and remain clickable
     }).bindTooltip(feature.properties.NAME)
   }
 }).addTo(map)
-
-legend.addOverlay(ems, 'EMS Stations')
 ```
 
 ## Learn more
