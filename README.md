@@ -1,4 +1,4 @@
-# leaflet-data-apis
+# leaflet-maps-open-data-apis
 Leaflet map with multiple API data feeds Socrata and Esri ArcGIS Online. View [demo](https://handsondataviz.github.io/leaflet-maps-open-data-apis/index.html).
 
 ![Screenshot](images/screenshot.png)
