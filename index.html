@@ -131,7 +131,7 @@
     */
     $.getJSON("https://data.medicare.gov/resource/xubh-q36u.geojson?state=ND", function(data) {
 
-      var hospitals = L.geoJson(data, {
+      var hospitals = L.geoJSON(data, {
         pointToLayer: function(feature, latlng) {
           return L.marker(latlng, {
             icon: L.icon({

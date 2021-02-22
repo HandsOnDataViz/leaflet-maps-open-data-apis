@@ -7,13 +7,12 @@ If you plan to query Socrata heavily, it is recommended you sign up for an API t
 
 ### Example of data fetch from Socrata
 
-Assuming you have your `map` initialized and layers control created, load data from a GeoJSON endpoint in Socrata
-and add it to the map, using custom icons for markers.
+Assuming you have your `map` initialized and layers control created, load data from a GeoJSON endpoint in Socrata and add it to the map, using custom icons for markers.
 
 ```javascript
 $.getJSON("https://data.medicare.gov/resource/xubh-q36u.geojson?state=ND", function(data) {
 
-  var hospitals = L.geoJson(data, {
+  var hospitals = L.geoJSON(data, {
     pointToLayer: function(feature, latlng) {
       return L.marker(latlng, {
         icon: L.icon({
