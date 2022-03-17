@@ -39,7 +39,7 @@ You can add point-level data to the map as shown below:
 
 ```javascript
 var ems = L.esri.featureLayer({
-  url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/EMS_Stations/FeatureServer/0',
+  url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/Emergency_Medical_Service_(EMS)_Stations_gdb/FeatureServer/0/',
   where: "STATE = 'ND'",
   pointToLayer: function(feature, latlng) {
     return L.circleMarker(latlng, {
