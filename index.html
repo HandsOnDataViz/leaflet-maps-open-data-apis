@@ -123,33 +123,48 @@
 
 
     /*
-      From Medicare's Socrata database, add general hospitals in North Dakota
-      using simple filtering on the `state` column, and a GeoJSON endpoint.
+      From AmeriCorps Socrata database, add projects in North Dakota
+      using simple filtering on the `stabbr` column, and a JSON endpoint.
 
-      Each point is a custom .png icon with a tooltip containing hospital's name,
-      city, and zipcode.
+      Each point is a custom .png icon with a tooltip containing AmeriCorps
+      sponsor name, and project description.
     */
-    $.getJSON("https://data.medicare.gov/resource/xubh-q36u.geojson?state=ND", function(data) {
+    $.getJSON("https://data.americorps.gov/resource/yie5-ur4v.json?stabbr=ND", function(data) {
 
-      var hospitals = L.geoJSON(data, {
-        pointToLayer: function(feature, latlng) {
-          return L.marker(latlng, {
+      // Array of markers
+      var markers = [];
+      
+      // For each row in Socrata, create a marker
+      for (var i = 0; i < data.length; i++) {
+        
+        var item = data[i];
+    
+        // Extract coordinates, convert strings to floats
+        var coordinates = [
+          parseFloat(item.geocoded_column.latitude),
+          parseFloat(item.geocoded_column.longitude)
+        ]
+
+        // Create a marker with a custom icon
+        var marker = L.marker(coordinates, {
             icon: L.icon({
-              iconUrl: 'images/hospital.png',
+              iconUrl: 'images/americorps.png',
               iconSize: [24, 24],
               iconAnchor: [12, 12],
               opacity: 0.5
             })
-          }).bindTooltip(
-            feature.properties.hospital_name
-              + '<br>' + feature.properties.city
-              + '<br>' + feature.properties.zip_code
-          )
-        }
-      }).addTo(map)
+        }).bindTooltip(item.sponsor + '<br>' + item.project_description);
+
+        // Add marker to the array of markers
+        markers.push(marker);
+      }
+
+      // Create a Leaflet layer group from array of markers
+      var layer = L.layerGroup(markers);
+      layer.addTo(map); // add layer to the map
 
       // Add layer to the legend, together with the little icon
-      legend.addOverlay(hospitals, 'Hospitals <img src="images/hospital.png" height="8" alt="Hospital">')
+      legend.addOverlay(layer, 'AmeriCorps NCCC <img src="images/americorps.png" height="11" alt="AmeriCorps NCCC">')
 
     })
 

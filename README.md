@@ -7,29 +7,49 @@ If you plan to query Socrata heavily, it is recommended you sign up for an API t
 
 ### Example of data fetch from Socrata
 
-Assuming you have your `map` initialized and layers control created, load data from a GeoJSON endpoint in Socrata and add it to the map, using custom icons for markers.
+*The original example showed hospital locations in North Dakota provided by Medicare.gov website. This example was modified on 23 March 2022 due to Medicare.gov replacing Socrata with a different database system. In this updated example, AmeriCorps NCCC projects in North Dakota are shown.*
+
+Assuming you have your `map` initialized and layers control created, load data from a JSON endpoint in Socrata and add it to the map, using custom icons for markers.
 
 ```javascript
-$.getJSON("https://data.medicare.gov/resource/xubh-q36u.geojson?state=ND", function(data) {
+    $.getJSON("https://data.americorps.gov/resource/yie5-ur4v.json?stabbr=ND", function(data) {
 
-  var hospitals = L.geoJSON(data, {
-    pointToLayer: function(feature, latlng) {
-      return L.marker(latlng, {
-        icon: L.icon({
-          iconUrl: 'images/hospital.png',
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
-          opacity: 0.5
-        })
-      }).bindTooltip(
-        feature.properties.hospital_name
-          + '<br>' + feature.properties.city
-          + '<br>' + feature.properties.zip_code
-      )
-    }
-  }).addTo(map)
-  
-})
+      // Array of markers
+      var markers = [];
+      
+      // For each row in Socrata, create a marker
+      for (var i = 0; i < data.length; i++) {
+        
+        var item = data[i];
+    
+        // Extract coordinates, convert strings to floats
+        var coordinates = [
+          parseFloat(item.geocoded_column.latitude),
+          parseFloat(item.geocoded_column.longitude)
+        ]
+
+        // Create a marker with a custom icon
+        var marker = L.marker(coordinates, {
+            icon: L.icon({
+              iconUrl: 'images/americorps.png',
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+              opacity: 0.5
+            })
+        }).bindTooltip(item.sponsor + '<br>' + item.project_description);
+
+        // Add marker to the array of markers
+        markers.push(marker);
+      }
+
+      // Create a Leaflet layer group from array of markers
+      var layer = L.layerGroup(markers);
+      layer.addTo(map); // add layer to the map
+
+      // Add layer to the legend, together with the little icon
+      legend.addOverlay(layer, 'AmeriCorps NCCC <img src="images/americorps.png" height="11" alt="AmeriCorps NCCC">')
+
+    })
 ```
 
 ### Example of data load using esri-leaflet plugin
