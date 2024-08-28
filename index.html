@@ -29,6 +29,11 @@
         top: 0;
         left: 0;
       }
+      .leaflet-tooltip {
+        max-width: 15rem;
+        width: max-content;
+        white-space: normal;
+      }
     </style>
   </head>
 
@@ -39,9 +44,9 @@
 
   <script>
     // Initialize the map with specified center coordinates and zoom level
-    // for target area (North Dakota)
+    // for target area (Hawaii)
     var map = L.map('map', {
-      center: [47.55, -100.34],
+      center: [20.61, -157.34],
       zoom: 7,
     })
 
@@ -67,106 +72,119 @@
 
 
     /*
-      Add county boundaries for North Dakota from an Esri server
-      located at https://ndgishub.nd.gov/arcgis/rest/services/All_GovtBoundaries/MapServer
+      Layer 1: Polygons from an Esri MapServer
+    
+      Uniform seismic hazard model results
+      Hosted by an Esri server at https://hifld-geoplatform.hub.arcgis.com/maps/geoplatform::seismic-hazard-model-pga-with-2-5-or-10-probability-in-50-years/about
 
-      Since each feature also contains population density, turn boundaries
-      into a choropleth by filling in features with shades of pink using a function
+      Each polygon has a probability value associated with it ('low_cont')
+      Let's turn this map into a choropleth by creating breaks and filling the polygons
+      based on its seismic hazard value
     */
-    var getDensityColor = function(d) {
-      return d > 100  ? '#7a0177' :
-              d > 50  ? '#c51b8a' :
-              d > 20  ? '#f768a1' :
-              d > 5   ? '#fbb4b9' :
-                        '#feebe2'
+    var getHazardColor = function(d) {
+      return d > 1.5   ? '#7a0177' :
+              d > 1.0  ? '#c51b8a' :
+              d > 0.5  ? '#f768a1' :
+              d > 0.2  ? '#fbb4b9' :
+                         '#feebe2'
     }
 
-    var counties = L.esri.featureLayer({
-      url: 'https://ndgishub.nd.gov/arcgis/rest/services/All_GovtBoundaries/MapServer/20',
+    var seismicHazardLayer = L.esri.featureLayer({
+      url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/ArcGIS/rest/services/Seismic_Ground_Motion_Hazards_with_2_5_or_10_Percent_Probability_in_50_years/FeatureServer/5',
       style: function(feature) {
         return {
           fillOpacity: 0.5,
-          weight: 0.5,
-          color: 'silver',
-          fillColor: getDensityColor(feature.properties.POP10_SQMI)
+          weight: 0, // the polygons are quite dense, so let's not draw boundaries
+          fillColor: getHazardColor(feature.properties.low_cont)
         }
       }
     }).addTo(map)
 
-    legend.addOverlay(counties, 'Population density')
+    legend.addOverlay(seismicHazardLayer, 'Seismic hazard')
 
 
     /*
-      Add EMS Stations as small blue points. To each point, attach tooltips with
-      the name of the station.
+      Layer 2: Volcanoes
+      Add US volcanoes as points from USGS Volcano API
+      Source: https://volcanoes.usgs.gov/vsc/api/volcanoApi/
 
-      Data by Homeland Infrastructure Foundation-Level Data (Esri server), queries for North Dakota (ND),
-      available at https://hifld-geoplatform.opendata.arcgis.com/datasets/emergency-medical-service-ems-stations/geoservice
+      This API returns a simple JSON array of objects
     */
-    var ems = L.esri.featureLayer({
-      url: 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services/Emergency_Medical_Service_(EMS)_Stations_gdb/FeatureServer/0/',
-      where: "STATE = 'ND'",
+
+    $.getJSON('https://volcanoes.usgs.gov/vsc/api/volcanoApi/volcanoesUS', function(apiResults) {
+
+        // Create an empty array to store Lefalet markers
+        let volcanoMarkers = [];
+
+        // Let's go through every element of the array returned by the Volcanoes API
+        for (var i in apiResults) {
+
+          // Let's only add volcanoes that are located around Hawaii
+          if (apiResults[i].subregion === 'Hawaii') {
+
+            // Extract coordinates from the volcano object
+            var lat = apiResults[i].latitude;
+            var lon = apiResults[i].longitude;
+
+            // Create a Leaflet marker with a custom image
+            var marker = L.marker([lat, lon], {
+              icon: L.icon({
+                iconUrl: 'images/volcano.png',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                opacity: 0.5
+              })
+            }).bindTooltip(apiResults[i].vName); // Add a tooltip with volcano name
+
+            // Add our volcano marker to the array of all other markers
+            volcanoMarkers.push(marker);
+
+          }
+        }
+
+        // Create a Leaflet layer group from array of markers
+        var volcanoLayer = L.layerGroup(volcanoMarkers);
+        volcanoLayer.addTo(map); // add layer to the map
+
+        // Add layer to the legend, together with the little icon
+        legend.addOverlay(
+          volcanoLayer,
+          'Volcanoes <img src="images/volcano.png" height="13" alt="Volcano emoji">'
+        )
+
+      }
+    )
+
+    /*
+      Layer 3: Hotels with 100+ units
+      Source: Hawaii Geospatial Data Portal
+      https://geoportal.hawaii.gov/
+    */
+
+    var hotelsLayer = L.esri.featureLayer({
+      url: 'https://geodata.hawaii.gov/arcgis/rest/services/BusinessEconomy/MapServer/2',
+      where: "type = 'HOTEL' and units > 100", // only show large hotels
       pointToLayer: function(feature, latlng) {
-        return L.circleMarker(latlng, {
-          radius: 4,
-          fillColor: 'blue',
-          color: 'blue',
-          weight: 0.1,
-          opacity: 1,
-          fillOpacity: 0.5,
-          pane: 'markerPane'
-        }).bindTooltip(feature.properties.NAME)
+        return L.marker(latlng, {
+              icon: L.icon({
+                iconUrl: 'images/hotel.png',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8],
+                opacity: 0.5
+              })
+            }).bindTooltip(  // Add a tooltip with hotel name & number of units
+              feature.properties.name
+              + '<br>'
+              + feature.properties.units
+              + ' units'
+            );
       }
     }).addTo(map)
 
-    legend.addOverlay(ems, 'EMS Stations <span style="color: blue; opacity: 0.8">&#9679;</span>')
-
-
-    /*
-      From AmeriCorps Socrata database, add projects in North Dakota
-      using simple filtering on the `stabbr` column, and a JSON endpoint.
-
-      Each point is a custom .png icon with a tooltip containing AmeriCorps
-      sponsor name, and project description.
-    */
-    $.getJSON("https://data.americorps.gov/resource/yie5-ur4v.json?stabbr=ND", function(data) {
-
-      // Array of markers
-      var markers = [];
-      
-      // For each row in Socrata, create a marker
-      for (var i = 0; i < data.length; i++) {
-        
-        var item = data[i];
-    
-        // Extract coordinates, convert strings to floats
-        var coordinates = [
-          parseFloat(item.geocoded_column.latitude),
-          parseFloat(item.geocoded_column.longitude)
-        ]
-
-        // Create a marker with a custom icon
-        var marker = L.marker(coordinates, {
-            icon: L.icon({
-              iconUrl: 'images/americorps.png',
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-              opacity: 0.5
-            })
-        }).bindTooltip(item.sponsor + '<br>' + item.project_description);
-
-        // Add marker to the array of markers
-        markers.push(marker);
-      }
-
-      // Create a Leaflet layer group from array of markers
-      var layer = L.layerGroup(markers);
-      layer.addTo(map); // add layer to the map
-
-      // Add layer to the legend, together with the little icon
-      legend.addOverlay(layer, 'AmeriCorps NCCC <img src="images/americorps.png" height="11" alt="AmeriCorps NCCC">')
-
-    })
+    legend.addOverlay(
+      hotelsLayer,
+      'Large hotels <img src="images/hotel.png" height="13" alt="Hotel emoji">'
+    )
 
     </script>
     
