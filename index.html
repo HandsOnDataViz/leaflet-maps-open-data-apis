@@ -52,7 +52,7 @@
 
 
     // Add Carto baselayer
-    var baselayer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    var baselayer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2lgt_1_9e472fb45845ca23e883e1aa', {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
     }).addTo(map)
 
@@ -181,13 +181,64 @@
       }
     }).addTo(map)
 
+<<<<<<< Updated upstream
     legend.addOverlay(
       hotelsLayer,
       'Large hotels <img src="images/hotel.png" height="13" alt="Hotel emoji">'
     )
+=======
+    legend.addOverlay(ems, 'EMS Stations <span style="color: blue; opacity: 0.8">&#9679;</span>')
+
+
+    /*
+      From AmeriCorps Socrata database, add projects in North Dakota
+      using simple filtering on the `stabbr` column, and a JSON endpoint.
+
+      Each point is a custom .png icon with a tooltip containing AmeriCorps
+      sponsor name, and project description.
+    */
+    $.getJSON("https://data.americorps.gov/resource/yie5-ur4v.json?stabbr=ND", function(data) {
+
+      // Array of markers
+      var markers = [];
+
+      // For each row in Socrata, create a marker
+      for (var i = 0; i < data.length; i++) {
+
+        var item = data[i];
+
+        // Extract coordinates, convert strings to floats
+        var coordinates = [
+          parseFloat(item.geocoded_column.latitude),
+          parseFloat(item.geocoded_column.longitude)
+        ]
+
+        // Create a marker with a custom icon
+        var marker = L.marker(coordinates, {
+            icon: L.icon({
+              iconUrl: 'images/americorps.png',
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+              opacity: 0.5
+            })
+        }).bindTooltip(item.sponsor + '<br>' + item.project_description);
+
+        // Add marker to the array of markers
+        markers.push(marker);
+      }
+
+      // Create a Leaflet layer group from array of markers
+      var layer = L.layerGroup(markers);
+      layer.addTo(map); // add layer to the map
+
+      // Add layer to the legend, together with the little icon
+      legend.addOverlay(layer, 'AmeriCorps NCCC <img src="images/americorps.png" height="11" alt="AmeriCorps NCCC">')
+
+    })
+>>>>>>> Stashed changes
 
     </script>
-    
+
   </body>
 
 </html>
